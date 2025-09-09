@@ -2,14 +2,18 @@
 <html>
 <head>
     <meta charset="utf-8" />
-    <title>Add Quote</title>
+    <title>{% if instance %}Edit Quote{% else %}Add Quote{% endif %}</title>
 </head>
 <body>
 <nav>
-    <!-- TODO: popular, random and add\edit tab -->
+    <a href="{% url 'quotes:random' %}">Random</a> |
+    {# TODO: popular #}
+    {% if instance %}| <a href="{% url 'quotes:edit' instance.pk %}">Edit</a>{% endif %}
+    | <a href="{% url 'quotes:add' %}">Add</a>
+    </nav>
 <hr/>
 
-<h1>Add Quote</h1>
+<h1>{% if instance %}Edit Quote{% else %}Add Quote{% endif %}</h1>
 
 <form method="post">
     {% csrf_token %}

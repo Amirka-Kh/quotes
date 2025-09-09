@@ -40,3 +40,18 @@ def dislike_quote(request: HttpRequest, pk: int) -> HttpResponse:
         return HttpResponseBadRequest("POST required")
     Quote.objects.filter(pk=pk).update(dislikes=F("dislikes") + 1)
     return redirect(reverse("quotes:random"))
+
+
+def edit_quote(request: HttpRequest, pk: int) -> HttpResponse:
+    try:
+        instance = Quote.objects.get(pk=pk)
+    except Quote.DoesNotExist:
+        return redirect(reverse("quotes:random"))
+    if request.method == "POST":
+        form = QuoteForm(request.POST, instance=instance)
+        if form.is_valid():
+            form.save()
+            return redirect(reverse("quotes:random"))
+    else:
+        form = QuoteForm(instance=instance)
+    return render(request, "quotes/quote_form.html", {"form": form, "instance": instance})

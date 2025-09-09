@@ -9,4 +9,5 @@ urlpatterns = [
     path("add/", views.add_quote, name="add"),
     path("like/<int:pk>/", views.like_quote, name="like"),
     path("dislike/<int:pk>/", views.dislike_quote, name="dislike"),
+    path("<int:pk>/edit/", views.edit_quote, name="edit"),
 ]
