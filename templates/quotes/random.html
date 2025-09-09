@@ -11,7 +11,15 @@
 </nav>
 <hr/>
 
-<p>No quotes available yet. <a href="{% url 'quotes:add' %}">Add one</a>.</p>
+{% if quote %}
+    <blockquote>
+        <p>{{ quote.text }}</p>
+        <footer>— {{ quote.source }}</footer>
+    </blockquote>
+    <p>Weight: {{ quote.weight }}</p>
+{% else %}
+    <p>No quotes available yet. <a href="{% url 'quotes:add' %}">Add one</a>.</p>
+{% endif %}
 
 </body>
 </html>

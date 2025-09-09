@@ -3,6 +3,9 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 
 from .forms import QuoteForm
+from .models import Quote
+from .services import pick_weighted_quote
+
 
 def add_quote(request: HttpRequest) -> HttpResponse:
     if request.method == "POST":
@@ -15,4 +18,7 @@ def add_quote(request: HttpRequest) -> HttpResponse:
     return render(request, "quotes/quote_form.html", {"form": form})
 
 def random_quote(request: HttpRequest) -> HttpResponse:
-    return render(request, "quotes/random.html")
+    quote = pick_weighted_quote()
+    if not quote:
+        return render(request, "quotes/random.html", {"quote": None})
+    return render(request, "quotes/random.html", {"quote": quote})
