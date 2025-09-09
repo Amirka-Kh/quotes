@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Add Quote</title>
+</head>
+<body>
+<nav>
+    <!-- TODO: popular, random and add\edit tab -->
+<hr/>
+
+<h1>Add Quote</h1>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Save</button>
+    <a href="{% url 'quotes:random' %}">Cancel</a>
+    </form>
+
+</body>
+</html>
