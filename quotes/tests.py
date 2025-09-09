@@ -3,6 +3,7 @@ from django.core.exceptions import ValidationError
 
 from .forms import QuoteForm
 from .models import Quote
+from .services import pick_weighted_quote
 
 
 class QuoteModelTests(TestCase):
@@ -90,3 +91,37 @@ class QuoteFormTests(TestCase):
         form = QuoteForm(data=form_data)
         self.assertFalse(form.is_valid())
         self.assertIn('A single source cannot have more than 3 quotes', str(form.errors))
+
+
+class WeightedSelectionTests(TestCase):
+    def setUp(self):
+        # Create quotes with different weights
+        self.quote1 = Quote.objects.create(text="Quote 1", source="Movie 1", weight=1)
+        self.quote2 = Quote.objects.create(text="Quote 2", source="Movie 2", weight=3)
+        self.quote3 = Quote.objects.create(text="Quote 3", source="Movie 3", weight=6)
+
+    def test_no_quotes_returns_none(self):
+        """Test that function returns None when no quotes exist"""
+        Quote.objects.all().delete()
+        result = pick_weighted_quote()
+        self.assertIsNone(result)
+
+    def test_weighted_selection_bias(self):
+        """Test that higher weight quotes are selected more often"""
+        # Run many trials to test statistical bias
+        results = []
+        for _ in range(1000):
+            quote = pick_weighted_quote()
+            if quote:
+                results.append(quote.pk)
+
+        # Count occurrences
+        counts = {}
+        for pk in results:
+            counts[pk] = counts.get(pk, 0) + 1
+
+        # Quote 3 (weight 6) should be selected most often
+        # Quote 2 (weight 3) should be selected less often
+        # Quote 1 (weight 1) should be selected least often
+        self.assertGreater(counts.get(self.quote3.pk, 0), counts.get(self.quote1.pk, 0))
+        self.assertGreater(counts.get(self.quote2.pk, 0), counts.get(self.quote1.pk, 0))
