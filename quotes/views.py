@@ -55,3 +55,12 @@ def edit_quote(request: HttpRequest, pk: int) -> HttpResponse:
     else:
         form = QuoteForm(instance=instance)
     return render(request, "quotes/quote_form.html", {"form": form, "instance": instance})
+
+
+def popular_quotes(request: HttpRequest) -> HttpResponse:
+    qs = Quote.objects.all()
+    source = request.GET.get("source")
+    if source:
+        qs = qs.filter(source=source)
+    quotes = qs.order_by("-likes", "-views")[:10]
+    return render(request, "quotes/popular.html", {"quotes": quotes, "active_source": source})

@@ -10,4 +10,5 @@ urlpatterns = [
     path("like/<int:pk>/", views.like_quote, name="like"),
     path("dislike/<int:pk>/", views.dislike_quote, name="dislike"),
     path("<int:pk>/edit/", views.edit_quote, name="edit"),
+    path("popular/", views.popular_quotes, name="popular"),
 ]

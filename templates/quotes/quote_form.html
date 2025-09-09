@@ -7,7 +7,7 @@
 <body>
 <nav>
     <a href="{% url 'quotes:random' %}">Random</a> |
-    {# TODO: popular #}
+    <a href="{% url 'quotes:popular' %}">Top 10</a>
     {% if instance %}| <a href="{% url 'quotes:edit' instance.pk %}">Edit</a>{% endif %}
     | <a href="{% url 'quotes:add' %}">Add</a>
     </nav>
