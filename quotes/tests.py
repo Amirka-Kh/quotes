@@ -1,6 +1,7 @@
 from django.test import TestCase
 from django.core.exceptions import ValidationError
 
+from .forms import QuoteForm
 from .models import Quote
 
 
@@ -49,3 +50,43 @@ class QuoteModelTests(TestCase):
         expected = "Test Movie: Test quote 1"
         self.assertEqual(str(self.quote1), expected)
 
+
+class QuoteFormTests(TestCase):
+    def setUp(self):
+        Quote.objects.create(text="Existing quote", source="Test Movie", weight=1)
+
+    def test_valid_form(self):
+        """Test valid form submission"""
+        form_data = {
+            'text': 'New quote',
+            'source': 'New Movie',
+            'weight': 2
+        }
+        form = QuoteForm(data=form_data)
+        self.assertTrue(form.is_valid())
+
+    def test_duplicate_validation(self):
+        """Test form validation for duplicates"""
+        form_data = {
+            'text': 'Existing quote',
+            'source': 'Test Movie',
+            'weight': 1
+        }
+        form = QuoteForm(data=form_data)
+        self.assertFalse(form.is_valid())
+        self.assertIn('This quote from the same source already exists', str(form.errors))
+
+    def test_max_quotes_per_source_validation(self):
+        """Test form validation for max quotes per source"""
+        # Create 2 more quotes for Test Movie (total 3)
+        Quote.objects.create(text="Quote 2", source="Test Movie", weight=1)
+        Quote.objects.create(text="Quote 3", source="Test Movie", weight=1)
+
+        form_data = {
+            'text': 'Quote 4',
+            'source': 'Test Movie',
+            'weight': 1
+        }
+        form = QuoteForm(data=form_data)
+        self.assertFalse(form.is_valid())
+        self.assertIn('A single source cannot have more than 3 quotes', str(form.errors))
