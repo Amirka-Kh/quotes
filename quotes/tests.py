@@ -1,5 +1,6 @@
-from django.test import TestCase
+from django.test import TestCase, Client
 from django.core.exceptions import ValidationError
+from django.urls import reverse
 
 from .forms import QuoteForm
 from .models import Quote
@@ -125,3 +126,126 @@ class WeightedSelectionTests(TestCase):
         # Quote 1 (weight 1) should be selected least often
         self.assertGreater(counts.get(self.quote3.pk, 0), counts.get(self.quote1.pk, 0))
         self.assertGreater(counts.get(self.quote2.pk, 0), counts.get(self.quote1.pk, 0))
+
+
+class QuoteViewsTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.quote = Quote.objects.create(
+            text="Test quote", source="Test Movie", weight=1
+        )
+
+    def test_random_quote_view(self):
+        """Test random quote view displays quote and increments views"""
+        initial_views = self.quote.views
+        response = self.client.get(reverse('quotes:random'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Test quote")
+
+        # Check that views were incremented
+        self.quote.refresh_from_db()
+        self.assertEqual(self.quote.views, initial_views + 1)
+
+    def test_random_quote_view_no_quotes(self):
+        """Test random quote view when no quotes exist"""
+        Quote.objects.all().delete()
+        response = self.client.get(reverse('quotes:random'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "No quotes available")
+
+    def test_like_quote_view(self):
+        """Test like quote view increments likes and redirects"""
+        initial_likes = self.quote.likes
+        response = self.client.post(reverse('quotes:like', args=[self.quote.pk]))
+
+        self.assertEqual(response.status_code, 302)  # Redirect
+        self.quote.refresh_from_db()
+        self.assertEqual(self.quote.likes, initial_likes + 1)
+
+    def test_dislike_quote_view(self):
+        """Test dislike quote view increments dislikes and redirects"""
+        initial_dislikes = self.quote.dislikes
+        response = self.client.post(reverse('quotes:dislike', args=[self.quote.pk]))
+
+        self.assertEqual(response.status_code, 302)  # Redirect
+        self.quote.refresh_from_db()
+        self.assertEqual(self.quote.dislikes, initial_dislikes + 1)
+
+    def test_like_dislike_get_method_fails(self):
+        """Test that GET method for like/dislike returns 400"""
+        response = self.client.get(reverse('quotes:like', args=[self.quote.pk]))
+        self.assertEqual(response.status_code, 400)
+
+        response = self.client.get(reverse('quotes:dislike', args=[self.quote.pk]))
+        self.assertEqual(response.status_code, 400)
+
+    def test_popular_quotes_view(self):
+        """Test popular quotes view displays quotes ordered by likes"""
+        # Create quotes with different like counts
+        quote2 = Quote.objects.create(text="Quote 2", source="Movie 2", weight=1, likes=5)
+        quote3 = Quote.objects.create(text="Quote 3", source="Movie 3", weight=1, likes=10)
+
+        response = self.client.get(reverse('quotes:popular'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Quote 3")  # Highest likes
+        self.assertContains(response, "Quote 2")
+        self.assertContains(response, "Test quote")
+
+    def test_popular_quotes_view_with_filter(self):
+        """Test popular quotes view with source filter"""
+        quote2 = Quote.objects.create(text="Quote 2", source="Movie 2", weight=1, likes=5)
+
+        response = self.client.get(reverse('quotes:popular'), {'source': 'Movie 2'})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Quote 2")
+        self.assertNotContains(response, "Test quote")
+
+    def test_add_quote_view_get(self):
+        """Test add quote view GET request"""
+        response = self.client.get(reverse('quotes:add'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Add Quote")
+
+    def test_add_quote_view_post_valid(self):
+        """Test add quote view POST with valid data"""
+        form_data = {
+            'text': 'New quote',
+            'source': 'New Movie',
+            'weight': 2
+        }
+        response = self.client.post(reverse('quotes:add'), form_data)
+
+        self.assertEqual(response.status_code, 302)  # Redirect
+        self.assertTrue(Quote.objects.filter(text='New quote').exists())
+
+    def test_edit_quote_view_get(self):
+        """Test edit quote view GET request"""
+        response = self.client.get(reverse('quotes:edit', args=[self.quote.pk]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Edit Quote")
+        self.assertContains(response, "Test quote")
+
+    def test_edit_quote_view_post_valid(self):
+        """Test edit quote view POST with valid data"""
+        form_data = {
+            'text': 'Updated quote',
+            'source': 'Updated Movie',
+            'weight': 3
+        }
+        response = self.client.post(reverse('quotes:edit', args=[self.quote.pk]), form_data)
+
+        self.assertEqual(response.status_code, 302)  # Redirect
+        self.quote.refresh_from_db()
+        self.assertEqual(self.quote.text, 'Updated quote')
+
+    def test_edit_quote_view_nonexistent(self):
+        """Test edit quote view with nonexistent quote"""
+        response = self.client.get(reverse('quotes:edit', args=[999]))
+
+        self.assertEqual(response.status_code, 302)  # Redirect to random
