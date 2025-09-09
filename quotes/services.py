@@ -22,4 +22,4 @@ def pick_weighted_quote() -> Optional[Quote]:
             except Quote.DoesNotExist:
                 continue
     # If failed, return something if possible
-    return Quote.objects.order_by("-weight").first()
+    return Quote.objects.order_by("-weight", "-likes").first()

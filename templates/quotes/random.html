@@ -16,7 +16,15 @@
         <p>{{ quote.text }}</p>
         <footer>— {{ quote.source }}</footer>
     </blockquote>
-    <p>Weight: {{ quote.weight }}</p>
+    <p>Weight: {{ quote.weight }} | Views: {{ quote.views }} | Likes: {{ quote.likes }} | Dislikes: {{ quote.dislikes }}</p>
+    <form method="post" action="{% url 'quotes:like' quote.pk %}">
+        {% csrf_token %}
+        <button type="submit">Like</button>
+    </form>
+    <form method="post" action="{% url 'quotes:dislike' quote.pk %}">
+        {% csrf_token %}
+        <button type="submit">Dislike</button>
+    </form>
 {% else %}
     <p>No quotes available yet. <a href="{% url 'quotes:add' %}">Add one</a>.</p>
 {% endif %}

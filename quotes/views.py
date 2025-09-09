@@ -1,6 +1,7 @@
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.db.models import F
 
 from .forms import QuoteForm
 from .models import Quote
@@ -17,8 +18,25 @@ def add_quote(request: HttpRequest) -> HttpResponse:
         form = QuoteForm()
     return render(request, "quotes/quote_form.html", {"form": form})
 
+
 def random_quote(request: HttpRequest) -> HttpResponse:
     quote = pick_weighted_quote()
     if not quote:
         return render(request, "quotes/random.html", {"quote": None})
+    Quote.objects.filter(pk=quote.pk).update(views=F("views") + 1)
+    quote.refresh_from_db(fields=["views"])  # keep view count fresh if displayed
     return render(request, "quotes/random.html", {"quote": quote})
+
+
+def like_quote(request: HttpRequest, pk: int) -> HttpResponse:
+    if request.method != "POST":
+        return HttpResponseBadRequest("POST required")
+    Quote.objects.filter(pk=pk).update(likes=F("likes") + 1)
+    return redirect(reverse("quotes:random"))
+
+
+def dislike_quote(request: HttpRequest, pk: int) -> HttpResponse:
+    if request.method != "POST":
+        return HttpResponseBadRequest("POST required")
+    Quote.objects.filter(pk=pk).update(dislikes=F("dislikes") + 1)
+    return redirect(reverse("quotes:random"))

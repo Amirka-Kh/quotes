@@ -2,10 +2,14 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
 
+
 class Quote(models.Model):
     text = models.TextField()
     source = models.CharField(max_length=255)
     weight = models.PositiveIntegerField(validators=[MinValueValidator(1)])
+    views = models.PositiveIntegerField(default=0)
+    likes = models.PositiveIntegerField(default=0)
+    dislikes = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -13,6 +17,7 @@ class Quote(models.Model):
         constraints = [
             models.UniqueConstraint(fields=["text", "source"], name="uniq_source_text"),
         ]
+        ordering = ["-likes", "-views", "-created_at"]
 
     def __str__(self) -> str:
         return f"{self.source}: {self.text[:50]}" if self.text else self.source
