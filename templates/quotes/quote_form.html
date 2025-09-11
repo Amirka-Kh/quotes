@@ -1,26 +1,185 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8" />
-    <title>{% if instance %}Edit Quote{% else %}Add Quote{% endif %}</title>
-</head>
-<body>
-<nav>
-    <a href="{% url 'quotes:random' %}">Random</a> |
-    <a href="{% url 'quotes:popular' %}">Top 10</a>
-    {% if instance %}| <a href="{% url 'quotes:edit' instance.pk %}">Edit</a>{% endif %}
-    | <a href="{% url 'quotes:add' %}">Add</a>
-    </nav>
-<hr/>
+{% extends 'base.html' %}
+{% load static %}
 
-<h1>{% if instance %}Edit Quote{% else %}Add Quote{% endif %}</h1>
+{% block title %}{% if instance %}Edit Quote{% else %}Add Quote{% endif %} - Quote Generator{% endblock %}
 
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Save</button>
-    <a href="{% url 'quotes:random' %}">Cancel</a>
-    </form>
+{% block extra_css %}
+<link href="{% static 'css/forms.css' %}" rel="stylesheet">
+{% endblock %}
 
-</body>
-</html>
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <div class="form-container">
+                <div class="form-header">
+                    <h1 class="form-title">
+                        <i class="fas fa-{% if instance %}edit{% else %}plus{% endif %} me-2"></i>
+                        {% if instance %}Edit Quote{% else %}Add New Quote{% endif %}
+                    </h1>
+                    <p class="form-subtitle">
+                        {% if instance %}
+                            Update the quote details below
+                        {% else %}
+                            Share an inspiring quote from a movie or book
+                        {% endif %}
+                    </p>
+                </div>
+
+                <!-- Form Progress -->
+                <div class="form-progress">
+                    <div class="form-progress-bar" style="width: 0%"></div>
+                </div>
+
+                <!-- Form Messages -->
+                <div class="form-messages">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}">
+                                <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% else %}info-circle{% endif %} me-2"></i>
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <form method="post" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    
+                    <!-- Quote Text -->
+                    <div class="form-group">
+                        <label for="{{ form.text.id_for_label }}" class="form-label required">
+                            <i class="fas fa-quote-left me-1"></i>Quote Text
+                        </label>
+                        <textarea 
+                            name="{{ form.text.name }}" 
+                            id="{{ form.text.id_for_label }}" 
+                            class="form-control {% if form.text.errors %}is-invalid{% endif %}" 
+                            rows="4" 
+                            placeholder="Enter the inspiring quote here..."
+                            required
+                            data-max-length="500"
+                        >{{ form.text.value|default:'' }}</textarea>
+                        {% if form.text.help_text %}
+                            <div class="form-text">{{ form.text.help_text }}</div>
+                        {% endif %}
+                        {% if form.text.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.text.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Source -->
+                    <div class="form-group">
+                        <label for="{{ form.source.id_for_label }}" class="form-label required">
+                            <i class="fas fa-film me-1"></i>Source (Movie/Book)
+                        </label>
+                        <input 
+                            type="text" 
+                            name="{{ form.source.name }}" 
+                            id="{{ form.source.id_for_label }}" 
+                            class="form-control {% if form.source.errors %}is-invalid{% endif %}" 
+                            placeholder="e.g., The Matrix, Harry Potter, etc."
+                            value="{{ form.source.value|default:'' }}"
+                            required
+                        >
+                        {% if form.source.help_text %}
+                            <div class="form-text">{{ form.source.help_text }}</div>
+                        {% endif %}
+                        {% if form.source.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.source.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Weight -->
+                    <div class="form-group">
+                        <label for="{{ form.weight.id_for_label }}" class="form-label required">
+                            <i class="fas fa-weight me-1"></i>Weight (1-100)
+                        </label>
+                        <div class="row">
+                            <div class="col-md-8">
+                                <input 
+                                    type="number" 
+                                    name="{{ form.weight.name }}" 
+                                    id="{{ form.weight.id_for_label }}" 
+                                    class="form-control {% if form.weight.errors %}is-invalid{% endif %}" 
+                                    placeholder="Enter weight (1-100)"
+                                    value="{{ form.weight.value|default:1 }}"
+                                    min="1" 
+                                    max="100"
+                                    required
+                                >
+                                {% if form.weight.help_text %}
+                                    <div class="form-text">{{ form.weight.help_text }}</div>
+                                {% endif %}
+                                {% if form.weight.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.weight.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-text">
+                                    <strong>Higher weight = more likely to appear</strong><br>
+                                    <small class="text-muted">Default: 1, Max: 100</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-form btn-submit">
+                            <i class="fas fa-save me-2"></i>
+                            {% if instance %}Update Quote{% else %}Add Quote{% endif %}
+                        </button>
+                        <a href="{% url 'quotes:random' %}" class="btn btn-form btn-cancel">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/forms.js' %}"></script>
+<script>
+    // Initialize form-specific functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add form validation hints
+        const form = document.querySelector('.needs-validation');
+        if (form) {
+            // Add real-time validation
+            const inputs = form.querySelectorAll('.form-control');
+            inputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    validateField(this);
+                    updateFormProgress();
+                });
+            });
+        }
+    });
+
+    // Update form progress
+    function updateFormProgress() {
+        const form = document.querySelector('.needs-validation');
+        const progressBar = document.querySelector('.form-progress-bar');
+        if (!form || !progressBar) return;
+
+        const requiredFields = form.querySelectorAll('input[required], textarea[required]');
+        const filledFields = Array.from(requiredFields).filter(field => field.value.trim() !== '');
+        
+        const progress = (filledFields.length / requiredFields.length) * 100;
+        progressBar.style.width = `${progress}%`;
+    }
+
+    // Initialize progress on page load
+    updateFormProgress();
+</script>
+{% endblock %}
