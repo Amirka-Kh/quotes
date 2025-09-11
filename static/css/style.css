@@ -1,0 +1,304 @@
+/* Custom CSS for Quote Generator */
+
+/* Import forms CSS */
+@import url('forms.css');
+
+:root {
+    --primary-color: #ccd5ae;
+    --secondary-color: #6c8e51;
+    --success-color: #d0f7a9;
+    --danger-color: #e7a9af;
+    --warning-color: #f9e29e;
+    --info-color: #ECEEDF;
+    --light-color: #f8f9fa;
+    --green-color: #385538;
+    --dark-color: #212529;
+    --border-radius: 0.5rem;
+    --box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    --box-shadow-lg: 0 1rem 3rem rgba(0, 0, 0, 0.175);
+    --transition: all 0.3s ease;
+}
+
+/* Global Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: var(--dark-color);
+    background-color: #fefae0;
+    min-height: 100vh;
+}
+
+.main-content {
+    padding-top: 100px;
+    min-height: calc(100vh - 200px);
+}
+
+/* Quote Card Styles */
+.quote-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow-lg);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: var(--transition);
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.quote-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, 0.2);
+}
+
+.quote-text {
+    font-size: 1.5rem;
+    font-weight: 300;
+    line-height: 1.8;
+    color: var(--dark-color);
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.quote-text::before {
+    content: '"';
+    font-size: 4rem;
+    color: var(--primary-color);
+    opacity: 0.3;
+    position: absolute;
+    top: -1rem;
+    left: -1rem;
+    font-family: serif;
+}
+
+.quote-source {
+    font-size: 1.1rem;
+    color: var(--secondary-color);
+    font-style: italic;
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+.quote-source::before {
+    content: '— ';
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+/* Stats Row */
+.quote-stats {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0.5rem;
+}
+
+.stat-icon {
+    font-size: 1.2rem;
+    margin-right: 0.5rem;
+    color: var(--primary-color);
+}
+
+.stat-value {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--dark-color);
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: var(--secondary-color);
+    margin-left: 0.25rem;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn-action {
+    min-width: 120px;
+    padding: 0.75rem 1.5rem;
+    border-radius: 50px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-action::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn-action:hover::before {
+    left: 100%;
+}
+
+.btn-like {
+    background: linear-gradient(45deg, var(--success-color), #c5f394);
+    border: none;
+    color: white;
+}
+
+.btn-like:hover {
+    background: linear-gradient(45deg, #b0f26a, #70c85c);
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(25, 135, 84, 0.3);
+}
+
+.btn-dislike {
+    background: linear-gradient(45deg, var(--danger-color), #fab199);
+    border: none;
+    color: white;
+}
+
+.btn-dislike:hover {
+    background: linear-gradient(45deg, #e29ca3, #f6786a);
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(220, 53, 69, 0.3);
+}
+
+.btn-refresh {
+    background: linear-gradient(45deg, var(--primary-color), #ccd5ae);
+    border: none;
+    color: white;
+}
+
+.btn-refresh:hover {
+    background: linear-gradient(45deg, #bccf7e, #c2d388);
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(181, 253, 13, 0.3);
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--secondary-color);
+}
+
+.empty-state i {
+    font-size: 4rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.empty-state h3 {
+    margin-bottom: 1rem;
+    color: var(--dark-color);
+}
+
+/* Loading Animation */
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .quote-text {
+        font-size: 1.25rem;
+    }
+
+    .quote-text::before {
+        font-size: 3rem;
+        top: -0.5rem;
+        left: -0.5rem;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .btn-action {
+        width: 100%;
+        max-width: 200px;
+    }
+
+    .stat-item {
+        margin-bottom: 0.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .main-content {
+        padding-top: 70px;
+    }
+
+    .quote-card {
+        margin: 1rem;
+    }
+
+    .quote-text {
+        font-size: 1.1rem;
+    }
+}
+
+/* Utility Classes */
+.text-gradient {
+    background: linear-gradient(45deg, var(--primary-color), #3b592b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.shadow-custom {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.border-gradient {
+    border: 2px solid;
+    border-image: linear-gradient(45deg, var(--primary-color), #3b592b) 1;
+}
+
+.navbar {
+    background-color: var(--primary-color);
+}
+
+.nav a {
+    color: var(--green-color);
+}
+
+.footer {
+    background-color: var(--primary-color);
+}
