@@ -51,8 +51,7 @@ ENV DJANGO_SETTINGS_MODULE=config.settings \
 
 # Create necessary directories
 RUN mkdir -p /staticfiles /media /logs && \
-    chown -R app:app /staticfiles /media /logs && \
-    chown app:app db.sqlite3 && chmod 644 db.sqlite3
+    chown -R app:app /staticfiles /media /logs
 
 # Collect static files
 RUN python manage.py collectstatic --noinput
