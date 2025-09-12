@@ -153,7 +153,7 @@ class QuoteViewsTests(TestCase):
         response = self.client.get(reverse('quotes:random'))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "No quotes available")
+        self.assertContains(response, "No Quotes Available", html=True)
 
     def test_like_quote_view(self):
         """Test like quote view increments likes and redirects"""
