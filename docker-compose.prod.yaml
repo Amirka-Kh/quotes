@@ -1,30 +1,64 @@
 services:
   app:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: quotes_app_prod
-    env_file:
-      - .env.prod
     environment:
       - DJANGO_SETTINGS_MODULE=config.settings_production.py
+      - DEBUG=False
     volumes:
-      - .:/app
       - static_volume:/app/staticfiles
       - media_volume:/app/media
+      - logs_volume:/app/logs
     expose:
       - "8000"
+    healthcheck:
+      test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/quotes/health/')" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+       resources:
+         limits:
+           memory: 512M
+         reservations:
+           memory: 256M
 
   nginx:
     image: nginx:1.25-alpine
-    container_name: quotes_nginx
+    container_name: quotes_nginx_prod
+    restart: unless-stopped
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - static_volume:/app/staticfiles:ro
       - media_volume:/app/media:ro
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - logs_volume:/var/log/nginx
+      - ./nginx/nginx-ssl.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
     depends_on:
-      - app
+      app:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+       resources:
+         limits:
+           memory: 128M
+         reservations:
+           memory: 64M
 
 volumes:
   static_volume:
   media_volume:
+  logs_volume:
+
+networks:
+  default:
+    driver: bridge
